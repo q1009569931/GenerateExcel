@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Excel Generator</title>
+    {% load static %}
+    <link href="{% static 'index.css' %}" rel="stylesheet" type="text/css">
+    <script src="{% static 'jquery-3.5.1.min.js' %}"></script>
+  </head>
+  <body>
+    <div class="titlebar">
+      <h1>Excel Generator</h1>
+    </div>
+
+    <div class="excel">
+      <table id="table">
+        <tr>
+          <td>&nbsp;</td>
+          <td>要求值</td>
+          <td>实际值</td>
+          <td>测试值</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="generate">
+      <select name="rank" id="rank">
+        <option value="high">精密</option>
+        <option value="middle">中等</option>
+        <option value="low">粗糙</option>
+        <option value="lowest">最粗</option>
+      </select>
+      <span>自定义孔位公差</span><input type="text" name="hole_diff" id="hole_diff">
+      <br>
+      <span>线性尺寸要求值： </span> <input type="text" name="line" id="line">
+      <input type="submit" name="提交" title="line" onclick="PostData(this)">
+      <br>
+      <span>倒角尺寸要求值： </span> <input type="text" name="r" id="r">
+      <input type="submit" name="提交" title="r" onclick="PostData(this)">
+      <br>
+      <span>孔位尺寸要求值： </span> <input type="text" name="hole" id="hole">
+      <input type="submit" name="提交" title="hole" onclick="PostData(this)">
+      <br>
+      <button id="getexcel" onclick="getexcel()">生成文件</button>
+    </div>
+  </body>
+  <script type="text/javascript" src="{% static 'index.js' %}"></script>
+</html>
