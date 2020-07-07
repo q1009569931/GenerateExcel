@@ -177,13 +177,13 @@ class GDate(View):
 class Excel(View):
 	def post(self, request):
 		# 第一次ajax传送数据过来生成excel表，第二次请求是form表单提交用于下载
-		if request.headers['Content-Type'].find('text') != -1:
+		if request.META['CONTENT_TYPE'].find('text') != -1:
 			data = json.loads(request.body.decode()) # 接受数据经转换后，是列表里面嵌套字典。
 			EXCELPATH = write_excel(data)
 			# 路径问题，使用redis，cookie为键，路径为值
 			# 使用redis的字符串类型存储
-			cache.set(request.headers["Cookie"], EXCELPATH)
-		EXCELPATH = cache.get(request.headers["Cookie"])
+			cache.set(request.META["HTTP_COOKIE"], EXCELPATH)
+		EXCELPATH = cache.get(request.META["HTTP_COOKIE"])
 		file = open(EXCELPATH, 'rb')
 		response = HttpResponse(file)
 		response['Content-Type'] = 'application/octet-stream' #设置头信息，告诉浏览器这是个文件
