@@ -12,107 +12,91 @@ from decimal import Decimal
 # Create your views here.
 
 # 公差数据
-# 尺寸公差
-size_diff = [0, 3, 6, 30, 120, 400, 1000, 2000]
+# 尺寸公差表
+size_require = [0, 3, 6, 30, 120, 400, 1000, 2000]
 size_diff_high = [0.05, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 0]
 size_diff_middle = [0.1, 0.2, 0.3, 0.5, 0.8, 1.2, 2.0, 3.0, 4.0]
 size_diff_low = [0.2, 0.3, 0.5, 0.8, 1.2, 2.0, 3.0, 4.0]
 size_diff_lowest = [0, 0.5, 1.0, 1.5, 2.5, 4.0, 6.0, 8.0]
-# 倒角公差
-r_diff = [0, 3, 6, 30]
+# 倒角公差表
+r_require = [0, 3, 6, 30]
 r_diff_high = [0.2, 0.5, 1.0, 2.0]
 r_diff_low = [0.4, 1.0, 2.0, 4.0]
 
-def ListToMinNum(L):
-	# 把列表的公差细分成0.01间隔的数
-	# 为避免浮点误差，使用Decimal
-	for i in range(0, len(L)):
-		low = Decimal(str(0 - L[i]))
-		high = Decimal(str(L[i]))
-		NumList = []
-		while low <= high:
-			NumList.append(low)
-			low += Decimal(str(0.01))
-		L[i] = NumList[:]
+# 实际差值
+real_diff = [-0.02, -0.01, 0.00, 0.01, 0.02]
 
-ListToMinNum(size_diff_high)
-ListToMinNum(size_diff_middle)
-ListToMinNum(size_diff_low)
-ListToMinNum(size_diff_lowest)
-ListToMinNum(r_diff_high)
-ListToMinNum(r_diff_low)
+def get_diff(diff_list, num_list, num_require):
+	'''
+	从公差表获得公差
+	'''
+	for i in range(0, len(num_list)-1):
+		if num_list[i] < num_require <= num_list[i+1]:
+			return diff_list[i]
 
-def get_data_diff_real(diff, diff_rank, num_require):
-	for i in range(0, len(diff)-1):
-			if diff[i] < num_require <= diff[i+1]:
-				diff = diff_rank[i]
-				diff = random.choice(diff)
-				num_real = num_require + diff
+# 线性公差
+def line(num_require, rank, hole_diff):
+	if rank == "high":
+		diff = get_diff(size_diff_high, size_require, num_require)
+	elif rank == "middle":
+		diff = get_diff(size_diff_middle, size_require, num_require)
+	elif rank == "low":
+		diff = get_diff(size_diff_low, size_require, num_require)
+	else:
+		diff = get_diff(size_diff_lowest, size_require, num_require)
+	return "±" + str(diff)
 
-				diff = str(diff)
-				num_real = str(num_real)
-				num_require = str(num_require.quantize(Decimal("0.0")))
+# 倒角公差
+def r(num_require, rank, hole_diff):
+	if rank == "high" or rank == "middle":
+		diff = get_diff(r_diff_high, r_require, num_require)
+	else:
+		diff = get_diff(r_diff_low, r_require, num_require)
+	return "±" + str(diff)
 
-				result = {
-					"num_require": num_require,
-					"diff": diff,
-					"num_real": num_real
-				}
+# 孔位公差
+def hole(num_require, rank, hole_diff):
+	return "±" + hole_diff
 
-				return result
+# 把函数放到字典里，减少if else判断
+func_dict = {
+	"line": line,
+	"r": r,
+	"hole": hole
+}
+# 字母对应的name
+name_dict = {
+	"l": "line",
+	"r": "r",
+	"h": "hole"
+}
 
-# 3个函数处理不同的数据类型
-def hole(data):
+def get_result(data):
+	num_require = float(data["num_input"])
+	the_real_diff = random.choice(real_diff)
+	name = name_dict[data["name"]]
+	rank = data["rank"]
 	hole_diff = data["hole_diff"]
-	num_input = data["num_input"]
 
-	num_require = Decimal(num_input).quantize(Decimal("0.00"))
-	hole_diff = Decimal(hole_diff).quantize(Decimal("0.00"))
-	num_real = num_require + hole_diff
+	func_get_data = func_dict[name]
+	diff = func_get_data(num_require, rank, hole_diff)
+	num_real = num_require + the_real_diff
 
-	diff = str(hole_diff)
-	num_real = str(num_real)
-	num_require = str(num_require.quantize(Decimal("0.0")))
+	# 全部变成字符串
+	num_require = str(Decimal(num_require).quantize(Decimal("0.0")))
+	num_real = str(Decimal(num_real).quantize(Decimal("0.00")))
+	the_real_diff = str(Decimal(the_real_diff).quantize(Decimal("0.00")))
 
 	result = {
 		"num_require": num_require,
 		"diff": diff,
-		"num_real": num_real
+		"num_real": num_real,
+		"real_diff": the_real_diff
 	}
 
 	return result
 
 
-def r(data):
-	num_require = data["num_input"]
-	rank = data["rank"]
-
-	num_require = Decimal(num_require).quantize(Decimal("0.00"))
-	if rank == "high" or rank == "middle":
-		return get_data_diff_real(r_diff, r_diff_high, num_require)
-	else:
-		return get_data_diff_real(r_diff, r_diff_low, num_require)
-
-def line(data):
-	num_require = data["num_input"]
-	rank = data["rank"]
-
-	num_require = Decimal(num_require).quantize(Decimal("0.00"))
-	if rank == "high":
-		return get_data_diff_real(size_diff, size_diff_high, num_require)
-	elif rank == "middle":
-		return get_data_diff_real(size_diff, size_diff_middle, num_require)
-	elif rank == "low":
-		return get_data_diff_real(size_diff, size_diff_low, num_require)
-	else:
-		return get_data_diff_real(size_diff, size_diff_lowest, num_require)
-
-# 把函数放在字典里，减少if else语句的使用
-dict_name = {
-	"line": line,
-	"r": r,
-	"hole": hole
-}
 
 # 根据时间戳生成excel的路径+文件名
 def excelpath():
@@ -168,9 +152,8 @@ class GDate(View):
 
 	def post(self, request):
 		data = json.loads(request.body.decode())
-		name = data["name"]
-		func_for_data = dict_name.get(name)
-		result = func_for_data(data)
+		print(data)
+		result = get_result(data)
 
 		return HttpResponse(json.dumps(result), content_type="application/json")
 

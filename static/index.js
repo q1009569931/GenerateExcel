@@ -1,13 +1,41 @@
 var table = document.getElementById("table");
 var line = 1;//行数
 
+//enter键-响应
+function keyDown(e){
+
+  var keycode = 0; 
+  //IE浏览器 
+  if(CheckBrowserIsIE()){ 
+      keycode = event.keyCode; 
+  }else{ 
+      //火狐浏览器 
+      keycode = e.which; 
+  } 
+  if (keycode == 13 ) //回车键是13 
+  { 
+      PostData(1);//回车后的响应函数             
+      document.getElementById("line").value = "";
+  } 
+}
+
+//检测浏览器
+function CheckBrowserIsIE(evt){
+    var result = false; 
+    var browser = navigator.appName; 
+    if(browser == "Microsoft Internet Explorer"){ 
+        result = true; 
+    } 
+    return result;           
+}
 
 // 发送数据制作表格
 function PostData(id) {
 	let rank = document.getElementById("rank").value //精密度等级
 	let hole_diff = document.getElementById("hole_diff").value //孔位公差
-	let name = id.title; //数据类别
-	let num_input = document.getElementById(name).value;
+	let num_input = document.getElementById("line").value;
+	let name = num_input.substring(0, 1);
+	num_input = num_input.substring(1);
 	let data = {
 		"name": name,
 		"rank": rank,
@@ -54,13 +82,17 @@ function addline(data) {
 	num_require.innerHTML = data.num_require;
 	row.appendChild(num_require);
 
+	var diff = document.createElement("td");
+	diff.innerHTML = data.diff;
+	row.appendChild(diff);
+
 	var num_real = document.createElement("td");
 	num_real.innerHTML = data.num_real;
 	row.appendChild(num_real);
 
-	var diff = document.createElement("td");
-	diff.innerHTML = data.diff;
-	row.appendChild(diff);
+	var real_diff = document.createElement("td");
+	real_diff.innerHTML = data.real_diff;
+	row.appendChild(real_diff);
 	return row;
 }
 

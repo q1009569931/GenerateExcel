@@ -17,6 +17,7 @@
         <tr>
           <td>&nbsp;</td>
           <td>要求值</td>
+          <td>公差</td>
           <td>实际值</td>
           <td>测试值</td>
         </tr>
@@ -32,14 +33,10 @@
       </select>
       <span>自定义孔位公差</span><input type="text" name="hole_diff" id="hole_diff">
       <br>
-      <span>线性尺寸要求值： </span> <input type="text" name="line" id="line">
+      <span>请输入要求值（“l”表示线性公差，“r”表示倒角公差，“h”表示孔位公差，以上均为小写字母）： </span>
+      <br>
+      <input type="text" name="line" id="line" onkeydown="keyDown(event)">
       <input type="submit" name="提交" title="line" onclick="PostData(this)">
-      <br>
-      <span>倒角尺寸要求值： </span> <input type="text" name="r" id="r">
-      <input type="submit" name="提交" title="r" onclick="PostData(this)">
-      <br>
-      <span>孔位尺寸要求值： </span> <input type="text" name="hole" id="hole">
-      <input type="submit" name="提交" title="hole" onclick="PostData(this)">
       <br>
       <button id="getexcel" onclick="getexcel()">生成文件</button>
     </div>
